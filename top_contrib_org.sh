@@ -49,6 +49,7 @@ cleanup_dir()
   if [ -d $DIR ]; then
     echo "Stage directory around, cleaning stuff"
     rm -rf $DIR/*
+    rm -rf $DIR/.*
   fi
 }
 
