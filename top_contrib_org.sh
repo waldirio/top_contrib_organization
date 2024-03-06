@@ -14,6 +14,10 @@ DIR="/tmp/top_contrib_report"
 CSV_OUTPUT="/tmp/full_report.csv"
 echo "org,project,pull_requests,author" > $CSV_OUTPUT
 
+CSV_PR_INFO="/tmp/pr_full_report.csv"
+echo "org,project,hash_short,hash_full,pr_desc,date,author" > $CSV_PR_INFO
+
+
 check_requirements()
 {
   # Checking if git is around, once it's required
@@ -106,6 +110,7 @@ check_repos()
 
   echo
   echo "Please, check the file $CSV_OUTPUT"
+  echo "Please, check the file $CSV_PR_INFO"
 }
 
 check_repo_info()
@@ -126,6 +131,13 @@ check_repo_info()
   # git log | grep ^Author | sort | uniq -c | sort -nr | head -n10 | sed 's/ Author: /,/g' | sed 's/,/,"/' | sed 's/$/"/' | sed "s/^ */$repo_name,/g" | sed "s/^ */$org_name,/g" >> $CSV_OUTPUT
   git log | grep ^Author | sort | uniq -c | sort -nr | sed 's/ Author: /,/g' | sed 's/,/,"/' | sed 's/$/"/' | sed "s/^ */$repo_name,/g" | sed "s/^ */$org_name,/g" >> $CSV_OUTPUT
   # git log | grep ^Author | sort | uniq -c | sort -nr | sed 's/ Author: /,/g' | sed 's/,/,"/' | sed 's/$/"$/' | sed "s/^ */$repo_name,/g" | sed "s/^ */$org_name,/g" >> $CSV_OUTPUT
+
+  # PR information
+  # The additional parse is to add an end of line in the last element. With that said,
+  # we are adding a new line on each of them, including the last one, and then, removing
+  #  the empty lines.
+  git log --pretty='format:%h,%H,"(%s)","%as","%ae"' | sed 's/$/\n/g' | grep -v ^$ | sed "s/^ */$repo_name,/g" | sed "s/^ */$org_name,/g" >> $CSV_PR_INFO
+
   cd
 
   # removing any repo info from local dir - $DIR
