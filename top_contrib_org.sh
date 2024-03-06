@@ -7,7 +7,7 @@
 # License .......: GPLv3
 # 
 
-ORG_URL=""
+# ORG_URL=""
 org_name=""
 
 DIR="/tmp/top_contrib_report"
@@ -15,7 +15,7 @@ CSV_OUTPUT="/tmp/full_report.csv"
 echo "org,project,pull_requests,author" > $CSV_OUTPUT
 
 CSV_PR_INFO="/tmp/pr_full_report.csv"
-echo "org,project,hash_short,hash_full,pr_desc,date,author" > $CSV_PR_INFO
+echo "org,project,hash_short,hash_full,pr_desc,date,author,email" > $CSV_PR_INFO
 
 
 check_requirements()
@@ -40,10 +40,20 @@ check_param()
     echo
     echo "$0 https://github.com/theforeman/"
     echo
+    echo "You can also load multiple orgs from a file. To do that:"
+    echo "$0 -f /path/to/the/file"
+    echo
     echo "exiting ..."
     exit 1
+  elif [ "$1" == "-f" ]; then
+    for b in $(cat $2 | grep -v ^#)
+    do
+      echo "- $b"
+      check_org $b
+    done
   else
-    ORG_URL=$1
+    check_org $1
+    # ORG_URL=$1
   fi
 }
 
@@ -60,6 +70,8 @@ cleanup_dir()
 
 check_org()
 {
+  ORG_URL=$1
+
   # Checking if the organization is valid, if not, it will exit
   org_id=$(curl -s $ORG_URL | grep -o "organization:.*" | cut -d\" -f1 | cut -d: -f2)
   if [ "$org_id" == "" ]; then
@@ -136,8 +148,10 @@ check_repo_info()
   # The additional parse is to add an end of line in the last element. With that said,
   # we are adding a new line on each of them, including the last one, and then, removing
   #  the empty lines.
-  git log --pretty='format:%h,%H,"(%s)","%as","%ae"' | sed 's/$/\n/g' | grep -v ^$ | sed "s/^ */$repo_name,/g" | sed "s/^ */$org_name,/g" >> $CSV_PR_INFO
-
+  # %f was used instead of %s, because some of the updates contains "", breaking the CSV structure
+  git log --pretty='format:%h,%H,"%f","%as","%an <%ae>","%ae"' | sed 's/$/\n/g' | grep -v ^$ | sed "s/^ */$repo_name,/g" | sed "s/^ */$org_name,/g" >> $CSV_PR_INFO
+  # git log --pretty='format:%h,%H,"%f","%as","%an <%ae>","%ae"'
+  
   cd
 
   # removing any repo info from local dir - $DIR
@@ -147,5 +161,5 @@ check_repo_info()
 
 ## Main
 check_requirements
-check_param $1
-check_org
+check_param $1 $2
+# check_org

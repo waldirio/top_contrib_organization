@@ -5,9 +5,13 @@ Here we can see an example
 ```
 ./top_contrib_org.sh 
 Stage directory around, cleaning stuff
+rm: "." and ".." may not be removed
 You need to pass the organization, for example:
 
 ./top_contrib_org.sh https://github.com/theforeman/
+
+You can also load multiple orgs from a file. To do that:
+./top_contrib_org.sh -f /path/to/the/file
 
 exiting ...
 ```
@@ -34,6 +38,21 @@ remote: Counting objects: 100% (1461/1461), done.
 
 Please, check the file /tmp/full_report.csv
 ```
+
+You can also pass a file with multiple organizations, for example, let see the file below
+```
+cat file.txt 
+https://github.com/Katello
+https://github.com/theforeman
+```
+
+With this information in the file, you can call the script like this
+```
+./top_contrib_org.sh -f file.txt
+```
+
+Note. If you add `#` before the organization in the `text file`, the same will be skipped.
+
 
 At the end of the process, you can play with the file `/tmp/full_report.csv` which will contains all the output in `CSV` format.
 
